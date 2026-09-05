@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank Soal Komprehensif PWK</title>
+<style>
+  :root {
+    --paper: #F7F3EA;
+    --paper-line: #E1D9C6;
+    --ink: #1F3A52;
+    --ink-soft: #4A5F70;
+    --accent: #B8622E;
+    --correct: #2F6B4F;
+    --correct-bg: #E5EFE7;
+    --wrong: #A6392F;
+    --wrong-bg: #F5E6E2;
+    --card: #FFFFFF;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  }
+  body {
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 32px 32px;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+    gap: 12px;
+  }
+  header .title-block h1 {
+    font-size: 1.55rem;
+    margin: 0 0 4px;
+    letter-spacing: 0.2px;
+    font-weight: 600;
+  }
+  header .title-block p {
+    margin: 0;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+  .compass {
+    width: 40px; height: 40px;
+    flex-shrink: 0;
+    opacity: 0.85;
+  }
+
+  .statusbar {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .progress-track {
+    height: 4px;
+    background: var(--paper-line);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 26px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.35s ease;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--paper-line);
+    border-radius: 3px;
+    padding: 28px 26px 22px;
+    box-shadow: 0 1px 0 rgba(31,58,82,0.04);
+    position: relative;
+  }
+  .card::before {
+    content: attr(data-tahun);
+    position: absolute;
+    top: -11px;
+    left: 24px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.5px;
+    padding: 3px 9px;
+    border-radius: 2px;
+  }
+  .soal {
+    font-size: 1.12rem;
+    line-height: 1.55;
+    margin: 6px 0 22px;
+  }
+  .options {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .option {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border: 1px solid var(--paper-line);
+    border-radius: 3px;
+    padding: 12px 14px;
+    cursor: pointer;
+    background: #FFFEFC;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+    font-size: 0.96rem;
+    line-height: 1.45;
+  }
+  .option:hover:not(.locked) {
+    border-color: var(--ink);
+    background: #FBF9F4;
+  }
+  .option .letter {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border: 1.5px solid var(--ink-soft);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .option.correct {
+    background: var(--correct-bg);
+    border-color: var(--correct);
+  }
+  .option.correct .letter {
+    background: var(--correct);
+    border-color: var(--correct);
+    color: #fff;
+  }
+  .option.wrong {
+    background: var(--wrong-bg);
+    border-color: var(--wrong);
+  }
+  .option.wrong .letter {
+    background: var(--wrong);
+    border-color: var(--wrong);
+    color: #fff;
+  }
+  .option.locked { cursor: default; }
+  .option.dim { opacity: 0.55; }
+
+  .feedback {
+    margin-top: 20px;
+    padding: 16px 18px;
+    border-radius: 3px;
+    display: none;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .feedback.show { display: block; }
+  .feedback.is-correct { background: var(--correct-bg); border-left: 3px solid var(--correct); }
+  .feedback.is-wrong { background: var(--wrong-bg); border-left: 3px solid var(--wrong); }
+  .feedback .verdict {
+    font-family: Georgia, serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+  .feedback.is-correct .verdict { color: var(--correct); }
+  .feedback.is-wrong .verdict { color: var(--wrong); }
+  .feedback .pembahasan-label {
+    text-transform: none;
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+    margin-top: 10px;
+    margin-bottom: 3px;
+  }
+  .feedback .pembahasan-body {
+    color: var(--ink);
+  }
+  .feedback .no-pemb {
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 22px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  button {
+    font-family: inherit;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 11px 20px;
+    font-weight: 600;
+  }
+  .btn-next {
+    background: var(--ink);
+    color: var(--paper);
+    opacity: 0.35;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .btn-next.active { opacity: 1; pointer-events: auto; }
+  .btn-next:hover.active { background: #16283a; }
+  .link-btn {
+    background: none;
+    color: var(--ink-soft);
+    font-weight: 500;
+    text-decoration: underline;
+    padding: 8px 4px;
+  }
+
+  .score-line {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+
+  /* summary screen */
+  .summary {
+    text-align: center;
+    padding: 50px 26px;
+  }
+  .summary .big {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 6px 0;
+  }
+  .summary p { font-family: "Helvetica Neue", Arial, sans-serif; color: var(--ink-soft); }
+  .summary-actions { margin-top: 24px; display: flex; gap: 10px; justify-content: center; }
+  .btn-primary {
+    background: var(--ink); color: var(--paper);
+  }
+  .btn-secondary {
+    background: transparent; color: var(--ink); border: 1.5px solid var(--ink) !important;
+  }
+
+  @media (max-width: 480px) {
+    .wrap { padding: 18px 14px 60px; }
+    .card { padding: 22px 16px 18px; }
+    header .title-block h1 { font-size: 1.25rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+
+  .option:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title-block">
+      <h1>Bank Soal Komprehensif PWK</h1>
+      <p>Kompilasi soal kating 2021&ndash;2024 &middot; UGM PWK</p>
+    </div>
+    <svg class="compass" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="18" stroke="#1F3A52" stroke-width="1.2"/>
+      <path d="M20 4 L23 20 L20 36 L17 20 Z" fill="#B8622E" opacity="0.85"/>
+      <circle cx="20" cy="20" r="2" fill="#1F3A52"/>
+    </svg>
+  </header>
+
+  <div id="quizArea">
+    <div class="statusbar">
+      <span id="counter">Soal 1 dari 93</span>
+      <span class="score-line" id="scoreLine">Benar 0</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="card" id="card" data-tahun="">
+      <div class="soal" id="soalText"></div>
+      <ul class="options" id="optionsList"></ul>
+      <div class="feedback" id="feedback">
+        <div class="verdict" id="verdict"></div>
+        <div class="pembahasan-label">Pembahasan</div>
+        <div class="pembahasan-body" id="pembBody"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="link-btn" id="shuffleBtn">Acak ulang soal</button>
+      <button class="btn-next" id="nextBtn">Soal berikutnya &rarr;</button>
+    </div>
+  </div>
+
+  <div id="summaryArea" style="display:none;">
+    <div class="card summary">
+      <p>Hasil akhir</p>
+      <div class="big" id="summaryScore">0 / 93</div>
+      <p id="summaryNote"></p>
+      <div class="summary-actions">
+        <button class="btn-primary" id="restartBtn">Ulangi dari awal</button>
+        <button class="btn-secondary" id="reviewBtn">Tinjau soal salah</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="questionData">[{"soal": "Dalam tipologi yang bisa berupa teori maupun metode, aspek apa yang menjadi kunci pertama yang perlu mendapatkan perhatian saat dioperasionalkan dalam sebuah perencanaan?", "options": [{"letter": "a", "text": "Penentuan objek"}, {"letter": "b", "text": "Observasi kategori"}, {"letter": "c", "text": "Pemahaman tipe"}, {"letter": "d", "text": "Teorifikasi data"}, {"letter": "e", "text": "Klasifikasi data"}], "correct": "c", "pembahasan": "", "tahun": "2021"}, {"soal": "Kriteria regional untuk pertimbangan pemilihan lokasi tempat pembuangan akhir sampah antara lain, kecuali:", "options": [{"letter": "a", "text": "Kondisi geologi dan hidrogeologi"}, {"letter": "b", "text": "Jarak dari kawasan permukiman"}, {"letter": "c", "text": "Jarak dari bandar udara"}, {"letter": "d", "text": "Kemiringan tanah"}, {"letter": "e", "text": "Kriteria rawan bencana"}], "correct": "c", "pembahasan": "", "tahun": "2021"}, {"soal": "Pernyataan yang menggambarkan kemiskinan alamiah adalah", "options": [{"letter": "a", "text": "Keluarga berpenghasilan rendah yang menanggung kebutuhan 9 anak"}, {"letter": "b", "text": "Masyarakat di NTB memiliki pendapatan yang rendah karena tanahnya kering dan tandus"}, {"letter": "c", "text": "Semua pernyataan salah"}, {"letter": "d", "text": "Masyarakat papua tidak dapat membuka"}], "correct": "b", "pembahasan": " Kemiskinan alamiah yaitu kemiskinan yang timbul sebagai akibat dari sumber daya alam yang langka atau karena perkembangan teknologi yang sangat rendah  Secara teoritis kemiskinan struktural yaitu keadaan miskin yang dialami oleh masyarakat dan bersumber dari struktur sosial (Suyanto, 2013:9).  Kemiskinan kultural lebih kepada budaya, kebiasaan dan nilai-nilai yang dianut oleh masyarakat seperti malas dan lemahnya etos kerja.", "tahun": "2021"}, {"soal": "Di bawah ini merupakan peraturan terkait penataan ruang, kecuali", "options": [{"letter": "a", "text": "UU No. 5 Tahun 1960"}, {"letter": "b", "text": "UU No. 4 Tahun 2009"}, {"letter": "c", "text": "UU No. 32 Tahun 2009"}, {"letter": "d", "text": "UU No. 41 Tahun 1999"}, {"letter": "e", "text": "UU No. 39 Tahun 1999"}], "correct": "e", "pembahasan": " UU PA 5 tahun 1960 ( Peraturan Dasar Pokok-pokok Agraria)  UU 32 2009 (Pengelolaan LH)  UU 4 2009 (Pertambangan Mineral..)  UU 39 1999 (Hak Asasi Manusia)  UU 41 1999 (Kehutanan)", "tahun": "2021"}, {"soal": "Partisipasi masyarakat yang paling kuat terdapat dalam proses perencanaan", "options": [{"letter": "a", "text": "Rencana induk kampus"}, {"letter": "b", "text": "Rencana pembangunan jangka menengah desa"}, {"letter": "c", "text": "Rencana tata ruang wilayah"}, {"letter": "d", "text": "Rencana pembangunan jangka menengah"}, {"letter": "e", "text": "Rencana kota baru"}], "correct": "b", "pembahasan": "", "tahun": "2021"}, {"soal": "Rata-rata kebutuhan air untuk rumah tangga di Indonesia, terutama untuk minum adalah sebesar", "options": [{"letter": "a", "text": "1-2 liter/orang/hari"}, {"letter": "b", "text": "2-3 liter/orang/hari"}, {"letter": "c", "text": "1-3 liter/orang/hari"}, {"letter": "d", "text": "3-4 liter/orang/hari"}, {"letter": "e", "text": "2-4 liter/orang/hari"}], "correct": "b", "pembahasan": "", "tahun": "2021"}, {"soal": "Berikut merupakan langkah-langkah dalam analisis AHP: 1. Penentuan alternatif 2. Penstrukturan tujuan dan kriteria secara hierarkis berdasarkan tingkat kepentingannya 3. Perumusan tujuan perencanaan dan kriteria 4. Melakukan pairwise comparison terhadap kriteria dan alternatif 5. Memberi rangking terhadap masing- masing alternatif 6. Menghitung prioritas Urutan yang benar untuk analisis tersebut adalah", "options": [{"letter": "a", "text": "3 – 2 – 1 – 4 – 6 – 5"}, {"letter": "b", "text": "1 – 3 – 2 – 4 – 5 – 6"}, {"letter": "c", "text": "2 – 3 – 1 – 4 – 6 – 5"}, {"letter": "d", "text": "Semua jawaban salah"}, {"letter": "e", "text": "1 – 2 – 3 – 4 – 5 – 6"}], "correct": "a", "pembahasan": "Rumus tujuan 1) Bikin kriteria 2) Bikin alternatif 3) Pairwise comparison 4) Eigen factor 5) Pemberian tingkatan pd alternatif", "tahun": "2021"}, {"soal": "Dalam penelitian dikenal istilah triangulasi, apakah yang dimaksud triangulasi", "options": [{"letter": "a", "text": "Proses pengumpulan data melalui responden dengan sudut pandang yang berbeda-beda"}, {"letter": "b", "text": "Proses pengolahan data penelitian yang melibatkan sudut pandang yang berbeda-beda"}, {"letter": "c", "text": "Proses analisis data dengan menggunakan metode kuantitatif dan kualitatif sekaligus Proses pengecekan kebenaran data"}, {"letter": "d", "text": "melalui sudut pandang yang berbeda-beda"}, {"letter": "e", "text": "Proses pengambilan kesimpulan melalui analisis terhadap sudut pandang yang berbeda-beda"}], "correct": "d", "pembahasan": "", "tahun": "2021"}, {"soal": "Apa yang membuat pandangan Wilbour Thompson dan Jane Jacobs mengenai tahapan perkembangan wilayah berbeda", "options": [{"letter": "a", "text": "Wilbur Thompson memandang bahwa metropolitan adalah titik awal perkembangan sebuah wilayah"}, {"letter": "b", "text": "Bagi Jane Jacobs inovasi bukan sesuatu yang penting Jane Jacobs menyatakan bahwa"}, {"letter": "c", "text": "tahapan perkembangan wilayah dimulai dari kota, sedangkan Wilbur Thompson menyatakan bahwa wilayah bisa berkembang baik dari kota maupun desa"}, {"letter": "d", "text": "Wilbour Thompson tidak mengakui pandangan dari Rostow, sementara"}], "correct": "c", "pembahasan": "Jane Jacobs →dimulai dari kota Wilbur →dimulai dari desa dan kota", "tahun": "2021"}, {"soal": "Untuk mencari angka ketergantungan (dependency ratio) digunakan rumus", "options": [{"letter": "a", "text": "Penduduk tidak produktif dibagi penduduk produktif"}, {"letter": "b", "text": "Penduduk produktif dibagi penduduk belum produktif"}, {"letter": "c", "text": "Penduduk belum produktif dibagi penduduk produktif"}, {"letter": "d", "text": "Penduduk belum produktif dibagi penduduk tidak produktif"}, {"letter": "e", "text": "Penduduk produktif dibagi penduduk tidak produktif"}], "correct": "a", "pembahasan": "", "tahun": "2021"}, {"soal": "Data dan informasi yang paling dibutuhkan saat penyusunan profil wilayah adalah sebagai berikut, kecuali", "options": [{"letter": "a", "text": "Karakter fisik dasar, potensi sumber daya teridentifikasi"}, {"letter": "b", "text": "Hambatan, peluang, tantangan, pengembangan"}, {"letter": "c", "text": "Karakter sosial kependudukan, karakter politik budaya"}, {"letter": "d", "text": "Kecenderungan perkembangan isu-isu pengembangan"}, {"letter": "e", "text": "Karakter ekonomi kondisi tata ruang wilayah"}], "correct": "b", "pembahasan": "", "tahun": "2021"}, {"soal": "Teori ekologi manusia (human ecology) sering kali diintegrasikan dalam praktek dan riset dalam bidang perencanaan wilayah dan kota. definisi ekologi manusia adalah", "options": [{"letter": "a", "text": "Sebuah bidang yang mempelajari lokasi, distribusi, dan organisasi sosial dari hubungan manusia"}, {"letter": "b", "text": "Ilmu sosial yang mempelajari hubungan antar individu dan antar kelompok manusia didalam masyarakat dalam konteks pengembangan masyarakat"}, {"letter": "c", "text": "Sebuah bidang yang mempelajari mengenai proses adaptasi manusia pada ekosistem alami sosial dan kultural yang ada di sekitarnya"}, {"letter": "d", "text": "Ilmu yang mempelajari hubungan dan pengaruh timbal balik antar bermacam-macam gejala sosial"}], "correct": "c", "pembahasan": "", "tahun": "2021"}, {"soal": "Penilaian terhadap kriteria kesesuaian lahan untuk permukiman dilakukan dengan merujuk pada beberapa parameter, kecuali", "options": [{"letter": "a", "text": "Kekuatan tanah"}, {"letter": "b", "text": "Kekasaran medan"}, {"letter": "c", "text": "Ketersediaan air"}, {"letter": "d", "text": "Kedekatan dengan jalan"}, {"letter": "e", "text": "Bahaya alam"}], "correct": "b", "pembahasan": "", "tahun": "2021"}, {"soal": "Pola saluran drainase berikut berbentuk", "options": [{"letter": "a", "text": "Multichannel"}, {"letter": "b", "text": "Parallel"}, {"letter": "c", "text": "Dendritik"}, {"letter": "d", "text": "Multilinear"}, {"letter": "e", "text": "Herringbone"}], "correct": "c", "pembahasan": "", "tahun": "2021"}, {"soal": "Neighborhood (Indonesia: lingkungan ketetanggaan) adalah ruang yang terkait dengan ruang tempat tinggal warganya yang terkoneksi dalam struktur ruang kawasan dan area yang lebih luas (kota) dan sebagai ruang yang menunjukkan interaksi kasual antar warga dan lingkungan tempat tinggalnya dalam", "options": [{"letter": "a", "text": "Center, proximity 250 – 400, edge, dan transect"}, {"letter": "b", "text": "Center, proximity 250 – 400, density, dan mix use"}, {"letter": "c", "text": "Transect, connection, density, edge, dan parking energy"}, {"letter": "d", "text": "Center, proximity 250 – 400, street hierarchy, dan mix use"}, {"letter": "e", "text": "Center, connection, transect, mix use, parking"}], "correct": "d", "pembahasan": "Urban Design Reclaimed (Emily Tallen): 1 Neighborhoods 2 Transects 3 Connections 4 Centers 5 Edges 6 Mix 7 Proximity 8 Density 9 Parking 10 Traffic", "tahun": "2021"}, {"soal": "John Forester, salah satu penggagas teori komunikatif planning mengintegrasikan pemikiran kritis Habermas mengenai komunikasi ke dalam bidang perencanaan. Pernyataan berikut relevan dengan pemikiran John Forester mengenai komunikatif planning, kecuali", "options": [{"letter": "a", "text": "Perencana harus membangun Kerjasama dan kepercayaan serta menghindari konflik"}, {"letter": "b", "text": "Perencana harus dapat memastikan komunitas dan organisasi masyarakat mendapatkan akses terhadap informasi perencanaan"}, {"letter": "c", "text": "Perencana harus dapat membuat semua masyarakat setuju dengan ide atau desain yang diajukan"}, {"letter": "d", "text": "Perencana harus mendengarkan, menganalisis, dan mengakomodasi berbagai kepentingan yang ada di masyarakat"}], "correct": "c", "pembahasan": "", "tahun": "2021"}, {"soal": "Berdasarkan gambar di bawah, tapak mana yang paling sesuai untuk didirikan sebuah kawasan perumahan", "options": [{"letter": "a", "text": "B dan D"}, {"letter": "b", "text": "A dan B"}, {"letter": "c", "text": "C dan E"}, {"letter": "d", "text": "C dan B"}, {"letter": "e", "text": "A dan D"}], "correct": "e", "pembahasan": "", "tahun": "2021"}, {"soal": "Perkembangan wilayah dengan populasi 2 juta penduduk. Di dalam wilayah tersebut terdapat 2 kota A dan B yang berbeda yang ditempatkan pada bagian kurva utilitas yang miring negative. Jika terdapat kecenderungan pindah dari kota A ke kota B yang terus meningkat, perpindahan atau migrasi itu akan mengakibatkan …. Utilitas di kota A dan …. Utilitas di kota B.", "options": [{"letter": "a", "text": "Naiknya/naiknya"}, {"letter": "b", "text": "Turunnya/naiknya"}, {"letter": "c", "text": "Turunnya/turunnya"}, {"letter": "d", "text": "Naiknya/turunnya"}, {"letter": "e", "text": "Stabil/stabil"}], "correct": "d", "pembahasan": "", "tahun": "2021"}, {"soal": "Berikut adalah ciri Kerjasama antar daerah kecuali", "options": [{"letter": "a", "text": "Memiliki sumber daya yang sama"}, {"letter": "b", "text": "Adanya pembagian peran"}, {"letter": "c", "text": "Kedekatan lokasi"}, {"letter": "d", "text": "Memiliki tujuan yang sama"}, {"letter": "e", "text": "Adanya pembagian resiko"}], "correct": "a", "pembahasan": "", "tahun": "2021"}, {"soal": "Dalam Analisa kawasan terutama yang berhubungan dengan bentuk dan morfologi bangunan, jenis peta tematik apa yang sesuai untuk skala tersebut", "options": [{"letter": "a", "text": "Peta tingkat perekonomian masyarakat"}, {"letter": "b", "text": "Peta block plan kawasan"}, {"letter": "c", "text": "Peta sebaran sarana dan prasarana"}, {"letter": "d", "text": "Peta sebaran bangunan kuno"}, {"letter": "e", "text": "Peta komposisi penduduk"}], "correct": "b", "pembahasan": "Jenis Peta 2D ● Block Pattern : Pola Jalan dan Konektivitas Kawasan (besar kecil blok mempengaruhi) ● Nolli : Ruang Publik ● Figure Ground : Persebaran Bangunan, informasi solid void", "tahun": "2021"}, {"soal": "Dalam analisis morfologi atau fabric lingkungan terbangun kawasan dan/atau kota dikenal dengan peta analisis 2 dimensi urban fabric. Peta analisis 2 dimensi yang mampu memberikan informasi terkait derajat besar kecilnya walkability dalam ruang adalah", "options": [{"letter": "a", "text": "Peta figure ground"}, {"letter": "b", "text": "Peta eyes on street"}, {"letter": "c", "text": "Peta interface public dan privat bangunan"}, {"letter": "d", "text": "Peta block pattern"}, {"letter": "e", "text": "Peta nolli"}], "correct": "d", "pembahasan": "Situasi (Block Plan): Gabungan massa bangunan dengan kondisi tapak/ lahan/ lingkungan alam yang menginformasikan pembentukan tataan ruang (komposisi massa bangunan) membentuk tataan ruang. Memuat gambar bangunan lain hingga jalan terbesar dan akses transportasi -> morfologi", "tahun": "2021"}, {"soal": "ada data dengan tipe ordinal, metode pengolahan data yang tepat untuk menemukan ukuran kecenderungan terpusat (measure of central tendency) adalah", "options": [{"letter": "a", "text": "Modus"}, {"letter": "b", "text": "Modus dan mean"}, {"letter": "c", "text": "Median dan mean"}, {"letter": "d", "text": "Modus dan median"}, {"letter": "e", "text": "Modus, median, mean"}], "correct": "d", "pembahasan": "", "tahun": "2021"}, {"soal": "1. Proximity dalam menjangkau fasilitas pelayanan lingkungan 2. Radius Keterjangkauan lingkungan sebesar 400- 800 meter 3. Memiliki center berupa taman kota yang harus terletak di tengah ruang kawasan 4. Memiliki guna lahan campuran (Mix Use) yang semakin intens di dekat center 5. Memiliki tingkat densitas optimal yang semakin tinggi di tepi atau edge ruang kawasan Berdasarkan pernyataan poin 1-5 tersebut, prinsip- prinsip ideal perencanaan ruang kawasan (Neighborhood Plan) berdasarkan Emily Talen, New Urbanism, Clarence Perry adalah", "options": [{"letter": "a", "text": "1, 2, 3, 4"}, {"letter": "b", "text": "1, 4, 5"}, {"letter": "c", "text": "1, 2, 4"}, {"letter": "d", "text": "1, 2, 5"}, {"letter": "e", "text": "3, 4, 5"}], "correct": "b", "pembahasan": "", "tahun": "2021"}, {"soal": "Pertumbuhan wilayah dapat dilihat dari indikator berikut", "options": [{"letter": "a", "text": "Pertumbuhan penduduk"}, {"letter": "b", "text": "Pertumbuhan pendapatan per kapita"}, {"letter": "c", "text": "Perubahan struktur ekonomi"}, {"letter": "d", "text": "A, B, C benar"}, {"letter": "e", "text": "Semua jawaban salah"}], "correct": "d", "pembahasan": "", "tahun": "2021"}, {"soal": "Jika Kecamatan Y ada Rumah Sakit tipe A, tapi kecamatan lain di Kota Z tidak ada rumah sakit. Artinya apa? Kecamatan Y di Kota Z memiliki rumah sakit bertipe A, sedangkan kecamatan lain di kota Z tidak memiliki rumah sakit. Namun terdapat rumah sakit di kecamatan lain di kota sebelahnya , bagaimana? y a gimana pak Kyknya klo yg ini itu Kec Y dan Kec lain di kota sebelah pny orde yg sama dee cmiiw -> keknya seingetku jg gini Cmiiw Kalau ga salah soalnya kec Y ada RS, kec z juga punya fasilitas sama Yaudah kalau soalnya gini jawab c, kalau soal atas jawab d :) lanjott HAHAH okayyyy SEKKK tapii klo jawaban c itu hrsnya kec Y dan kec z kann yg pny orde sama? Bukan kec Y kota Z kan? Iyes oh iyeee Sebenernya apakah mungkin 2 kota orde 1 itu bersebelahan?, soalnya ada hint bersebelahan. IYA JG YAA hemm ->> tergantung 1kabupaten ato gakk, kalo satu", "options": [{"letter": "a", "text": "Kota Z mutlak orde 1"}, {"letter": "b", "text": "Kec Y tidak ada hubungannya dengan orde, tapi kota Z orde 1"}, {"letter": "c", "text": "Kec Y dan Kota Z orde 1"}, {"letter": "d", "text": "Kec Y mutlak berhierarki paling tinggi"}, {"letter": "e", "text": "Kec Y tidak berarti apa-apa (hanya kebetulan ada RS), Kota Z orde I"}], "correct": "d", "pembahasan": "Kecamatan Y = Orde I Orde Kota tidak bisa ditentukan, karena harus dibandingkan dengan fasilitas di kota lain ● Orde struktur kota : PKN →PKW →PKL →PPK (Pusat Pelayanan Kawasan)→PPL (Pusat Pelayanan Lingkungan) ● Urutan Orde 1 merupakan hirarki tertinggi ● Ngitung orde tuh kecamatan apa kota y ● Simpul struktur ruang terkecil skala kota/ kawasan perkotaan", "tahun": "2022"}, {"soal": "Bukan Karakteristik Robustness", "options": [{"letter": "a", "text": "Ruang Pasif"}, {"letter": "b", "text": "Desain"}, {"letter": "c", "text": "Akses"}, {"letter": "d", "text": "Ruang Publik"}, {"letter": "e", "text": "Fleksibilitas"}], "correct": "a", "pembahasan": "Bentley (1985) menyebutkan bahwa Robustness merupakan salah satu dari pendekatan konsep ruang yang memiliki peluang untuk mewadahi berbagai jenis kegiatan (fleksibel, multifungsi) Main UD Principle: 1. Robustness: multifungsi 2. Permeability: integrasi/koneksi dri bentuk, alam, dan lingkungan terbangun 3. Legibility: hubungan ruang dan perilaku/kegiatan manusia 4. Variety: keberagaman bentuk dan fungsi agar msyrkt mudah mengakses job dan pelayanan", "tahun": "2022"}, {"soal": "Tokoh Belanda yang membantu perencanaan tata ruang di Indonesia", "options": [{"letter": "a", "text": "Andreas Gaudi"}, {"letter": "b", "text": "Jan Gehl"}, {"letter": "c", "text": "Thomas Karsten"}, {"letter": "d", "text": "Ebenezer Howard"}, {"letter": "e", "text": "?"}], "correct": "c", "pembahasan": "Thomas Karsten adalah seorang insinyur asal Belanda yang berkontribusi besar terhadap arsitektur dan perencanaan perkotaan di Indonesia. Projek thomas karsten : Lapangan monas, kawasan jalan Ijen, penataan kawasan Candi, stasiun solo balapan, pura mangkunegaran, museum sonobudoyo Jan Gehl = people public space (protection-comfort-livable/enjoyment) Ebenezer Howard = garden city Andrea Faludi = rational comprehensive di Indonesia Antoni Gaudi (orang spanyol) antoni apa andreas", "tahun": "2022"}, {"soal": "Metode khusus ke umum disebut dengan", "options": [{"letter": "a", "text": "Induktif"}, {"letter": "b", "text": "Deduktif"}, {"letter": "c", "text": "Delphi"}, {"letter": "d", "text": "Content Analysis"}, {"letter": "e", "text": "Studi kasus"}], "correct": "a", "pembahasan": "● Induktif = Khusus ke umum, membangun teori/konsep dari fakta di lapangan ● Deduktif = Umum ke khusus, menguji teori/konsep dengan fakta di lapangan ● Delphi = proses yang dilakukan dalam kelompok untuk mensurvei dan mengumpulkan pendapat dari para ahli terkait topik tertentu ● Content analysis = metode dengan mengkaji dokumen kebijakan/ video/ dll sebagainya untuk", "tahun": "2022"}, {"soal": "Hukum pengaturan guna lahan (?) yang dipakai pemerintah, kecuali Paradigma yang dianut oleh pemerintah Indonesia, kecuali?", "options": [{"letter": "a", "text": "nuisance law"}, {"letter": "b", "text": "domain power"}, {"letter": "c", "text": "the police power"}, {"letter": "d", "text": "eminent domain"}, {"letter": "e", "text": "compensatory relief"}], "correct": "b", "pembahasan": "●Nuisance law = tidak seorang pun memiliki hak untuk menggunakan properti yang dapat merugikan tetangga ●Domain power = ?? ●The police power = pembatasan penggunaan milik pribadi yang merugikan kepentingan umum dalam segala bentuknya ●Eminent domain = power untuk mengambil private properties untuk kepentingan publik ●Compensatory relief = mendapatkan kompensasi uang atas kerusakan atau cedera yang disebabkan oleh orang atau penggugat. Anjir bisa ketemu 👍👍👍👍👍dengan kekuatan bulan", "tahun": "2022"}, {"soal": "Seorang lagi meneliti di jalan, lalu mencari data dengan tanya orang yang lagi le wat di jalan, disebut sampling apakah ini?", "options": [{"letter": "a", "text": "Purposive sampling"}, {"letter": "b", "text": "Random Sampling"}, {"letter": "c", "text": "Convenience Sampling"}, {"letter": "d", "text": "Simple random sampling"}, {"letter": "e", "text": "Simple random sampling"}], "correct": "c", "pembahasan": "Convenience sampling atau Sampling Kebetulan (accidental sampling) Contoh: Ketika perusahaan mendistribusikan pamflet promosi mereka dan mengajukan pertanyaan di mal atau di jalan yang ramai dengan peserta yang dipilih secara acak a) Probability Sampling = setiap populasi memiliki probabilitas yang sama untuk menjadi sampel 1. Simple random sampling : seleksi secara acak 2. Stratified Random sampling : penarikan sampel acak terstruktur dilakukan dengan membagi anggota populasi dalam beberapa sub kelompok (strata) 3. Cluster random sampling : karakteristik kelompok / cluster yang sama dianggap mewakili populasi 4. Systematic random populasi : cara pengambilan sampel dimana sampel pertama ditentukan secara acak, sedangkan sampel berikutnya diambil berdasarkan satu interval tertentu. b) Non-Probability Sampling", "tahun": "2022"}, {"soal": "Dalam Pearson Correlation variabel a dan b memiliki r = -0,87 artinya", "options": [{"letter": "a", "text": "Korelasi kuat …"}, {"letter": "b", "text": "Korelasi kuat …"}, {"letter": "c", "text": "Korelasi kuat, jika A naik, maka B turun"}, {"letter": "d", "text": "Tidak ada korelasi"}, {"letter": "e", "text": "Korelasi lemah"}], "correct": "c", "pembahasan": "- r digunakan untuk melihat kekuatan korelasi antar 2 variabel melalui r2 - Jika r2>0,5 dan mendekati 1=korelasi kuat - Tanda (-/+) menunjukkan arah hubungannya (positif/sejalan dan negatif/berkebalikan) 0,872=0,76 maka korelasi kuat Negatif = jika A naik, maka B turun (karena hubungannya terbalik)", "tahun": "2022"}, {"soal": "Gambar Peta Tegal Jalan arteri yang menyebabkan kemacetan dll, terus ada pedestrian ways Jl Ahmad Yani. Ini sebut apa?", "options": [{"letter": "a", "text": "Deskripsi"}, {"letter": "b", "text": "Interpretasi spasial"}, {"letter": "c", "text": "Sebab akibat (interelasi)"}, {"letter": "d", "text": "korelasi?"}], "correct": "c", "pembahasan": "Interpretasi Spasial-Peta - Distribusi: sebaran sarana - Sebab-Akibat →menggambarkan hubungan sebab dan akibat (ada jalan arteri, jadi macet) - Deskripsi →menggambarkan/mendeskripsikan suatu kondisi wilayah - Korelasi →menyeluruh", "tahun": "2022"}, {"soal": "Gambar Economic Fabric (Sistem tata bangunan sektor ekonomi yang sehat). Manakah yang benar", "options": [{"letter": "a", "text": "Block sesuatu (apartemen, bangunan tinggi) dengan setback 0 m"}, {"letter": "b", "text": "Shopping street"}, {"letter": "c", "text": "Square"}], "correct": "b", "pembahasan": "Bedanya shopping street vs shopping strip? Shopping strip itu ada parkir kendaraan, kalo shopping street gaada parkir apa ga kebalik bunda Wkw Bener kok, berdasar ctt aku kalo shopping strip itu emg ditujukan buat modil dan jalur pedestriannya terputus, kalo shopping street itu jualannya mepet jalan (ky malioboro) dan dia lebih hidup suasananya dibanding shopping strip", "tahun": "2022"}, {"soal": "Indikator Mix Use", "options": [{"letter": "a", "text": "Mix (tipe) perkantoran, tipe rumah, komersil"}, {"letter": "b", "text": "Mix (fungsi) komersil dan hunian"}, {"letter": "c", "text": "Serasi antara hunian dan komersial"}, {"letter": "d", "text": "Tipe hunian"}], "correct": "a", "pembahasan": "Mixed-use development is a type of urban development that blends residential, commercial, cultural, institutional, or industrial uses, where those functions are physically and functionally integrated, and that provides pedestrian connections. MTR Kawasan minggu 6 https://docs.google.com/presentation/d/1tm1xXczwCoOa J3KzZtdcIHQEi2MC5Ivg/edit#slide=id.p2", "tahun": "2022"}, {"soal": "Yang bukan manfaat social media dalam perencanaan wilayah dan kota adalah", "options": [{"letter": "a", "text": "Meningkatkan keterkaitan/kedekatan antara masyarakat dengan pemerintah"}, {"letter": "b", "text": "Menginfokan kebijakan strategis"}, {"letter": "c", "text": "Mempublikasikan kebijakan yang privat?"}, {"letter": "d", "text": "?"}, {"letter": "e", "text": "?"}], "correct": "c", "pembahasan": "", "tahun": "2022"}, {"soal": "Massa & Bentuk Tapak (yang seragam)?", "options": [{"letter": "a", "text": "Line"}, {"letter": "b", "text": "Texture"}, {"letter": "c", "text": "Form"}, {"letter": "d", "text": "Shape & mass"}, {"letter": "e", "text": "Colour"}], "correct": "c", "pembahasan": "Analisis Visual Kawasan 1. Analisis Form = 1. geometri, kompleksitas dan orientasi 2. (massa , bentuk, ukuran, sub karakter : geometri, kompleksitas, orientasi) 2. Analisis Line = 1. vertical, horizontal 2. (garis nyata / imajiner yang mengarahkan mata untuk melihat perbedaan bentuk, warna, tekstur) 3. Analisis Color = Hue (merah biru kuning dst) , Value (derajat keterangan atau kegelapannya), Chroma (kecerahan warna), dominan 4. Analisis Texture = Grain (variasi permukaan), density, regularity, internal contrast (kontras hue dan value)", "tahun": "2022"}, {"soal": "Tujuan, strategi, …. Merupakan turunan dari aspek pembangunan wilayah bagian…", "options": [{"letter": "a", "text": "Semua jawaban benar"}, {"letter": "b", "text": "Visi, misi"}, {"letter": "c", "text": "Perumusan"}], "correct": "a", "pembahasan": "", "tahun": "2022"}, {"soal": "Yang termasuk ilustrasi kegagalan hubungan desa kota adalah", "options": [{"letter": "a", "text": "Menurunnya degradasi lingkungan dan menipisnya sumber daya (kalo gak salah jawabannya penurunan degradasi, jadi harusnya salah (?))"}, {"letter": "b", "text": "?"}, {"letter": "c", "text": "?"}, {"letter": "d", "text": "Kesenjangan demografi dan sosial"}], "correct": "d", "pembahasan": "Sumber: PPT Permasalahan Pembangunan Minggu 3", "tahun": "2022"}, {"soal": "Komponen yang harus masuk dalam poster akademik", "options": [{"letter": "a", "text": "Pertanyaan penelitian"}, {"letter": "b", "text": "Jawaban penelitian/ hasil penelitian"}, {"letter": "c", "text": "Jargon"}, {"letter": "d", "text": "A dan b benar"}, {"letter": "e", "text": "A B C Benar"}], "correct": "b", "pembahasan": "Sumber: PPT Tekompres minggu 9 Kalau dari ppt di atas pertanyaan penelitian gamasuk konten inti poster akademik, jadi kayanya jawabannya yg jawaban penelitian aja (hasil) Pertanyaan penelitian bukan masuk di pendahuluan? *cuma nanya Kalo di ppt isi pendahuluan itu ada latar belakang, tujuan, keunikan topik, sama hal baru yang muncul, gaada disebutin pertanyaan penelitian", "tahun": "2022"}, {"soal": "Kenapa kota memiliki tenaga kerja dan lapangan kerja lebih banyak dari desa Perkembangan kota : Rostow - W. Thompson - J.Jacobs →desa (tradisional) - industrialisasi (mass consumption) - kota besar - spesialisasi - mandiri - inovasi - spill over", "options": [{"letter": "a", "text": "Karena kota besar menarik jadi orang lebih memilih pindah"}, {"letter": "b", "text": "Karena kota besar konsumen/pasar tinggi (aku tim b, aku juga, ) kami juga, sapi sepakat b! setujuu"}, {"letter": "c", "text": "kota besar variasi produksinya luas (kayaknya ini bener) (apakah variasi ngaruh?)"}, {"letter": "d", "text": "0"}], "correct": "b", "pembahasan": "Cities have always been the nexus of prosperity, job creation, and poverty reduction. Workers moving to cities for jobs is an age-old story. In theory, jobs are created in cities when firms are located closer to other firms, the labor market, and potential clients. Productivity increases, revenues come in and new jobs are created. In other words, agglomeration economies take advantage of the possibilities of scale. Such productivity gains then lead to better jobs through wage premia. In practice, however, this process is not always as seamless as it should be.", "tahun": "2022"}, {"soal": "Yang bukan merupakan manfaat distribusi listrik dengan pembangkit dekat dengan pengguna adalah DG (distributed generation)", "options": [{"letter": "a", "text": "Menyeimbangkan biaya investasi melalui pungutan tarif"}, {"letter": "b", "text": "Mengurangi terorisme dan meningkatkan pertahanan infrastruktur kota ?"}, {"letter": "c", "text": "Penambahan daya puncak"}, {"letter": "d", "text": "pengurangan guna lahan dan bla bla tarif Hak jalan"}], "correct": "b", "pembahasan": "Serius terorisme? Aku ingetnya erorisme wkwkwk Kalo itu erorisme trs jwbannya jd apa? D? C atuh Erorisme apaannn?? Aliran pemahaman tentang error wkwk BANGKEEE Erotisme gw tau wth dude//???? Distributed generation (DG) memiliki banyak keuntungan seperti meningkatkan kapasitas daya (ap ini peningkatan daya puncak) dalam sistem tenaga, mengurangi kerugian daya dalam sistem tenaga, dan meningkatkan profil tegangan Hak jalan bisa jadi nyambung soalnya ngurangin prasarana buat transmisi listriknya ga si mba (?) jadi ga banyak tiang listrik -> hak jalan lebih baik Tapi yg b jg bener wkwk Gatau deh wkwkw aku blm terlalu paham apa itu DG sebeenernya Distributed Generation seringkali disebut juga dengan on-site generation, dispersed generation, embedded generation, decentralized", "tahun": "2022"}, {"soal": "Untuk meneliti tentang kawasan yang sudah lama mengalami perubahan bentuk Melihat bentuk asli ruang yg telah berkembang", "options": [{"letter": "a", "text": "Morfogenesis"}, {"letter": "b", "text": "Persisted morphology (ini persisted/bertahan jadi ga berubah bentuk)"}, {"letter": "c", "text": "Space DNA xxx"}, {"letter": "d", "text": "Ontogenesis"}, {"letter": "e", "text": "Evolusi"}], "correct": "a", "pembahasan": "Ontogenesis = bagaimana ayam bisa hidup dari telur (perkembangan dari bentuk yang sederhana menjadi lebih komplex) Phylogenesis = evolusi dari Gallus Gallus (ayam merah) (perkembangan dari satu spesies menjadi beberapa spesies-evolusi) Morfogenesis = proses perkembangan embrio (dari embrio menjadi dewasa) WOY ADA MORFOGENESIS BATUAN!! Morfogenesis selain embrio: Morfogenesis menggambarkan asal terbentuknya batuan dan proses pembentukannya yang diperoleh dari litologi, struktur geologi, serta pola aliran sungai. Morfologi = ilmu tentang bentuk Secara detail, perubahan dapat dilihat secara ontogenesis yaitu bentuk asli atau perubahan dari suatu unit/individu dan secara phylogenesis yaitu sejarah, kronologis atau evolusi dari suatu type. Untuk", "tahun": "2022"}, {"soal": "4 step model untuk menentukan rute perjalanan disebut dengan", "options": [{"letter": "a", "text": "Modal split"}, {"letter": "b", "text": "Trip distribution"}, {"letter": "c", "text": "Trip assignment"}, {"letter": "d", "text": "Trip contribution"}, {"letter": "e", "text": "Trip generation"}], "correct": "c", "pembahasan": "Generation: bangkitan (trip production) = perjalanan yang mempunyai tempat asal dari kawasan perumahan di tata guna lahan tertentu Distribution: mau ke mana (tujuan dari bangkitan mau kemana) Modal Split: pemilihan moda Assignment: Jalur/rute yang mau dilalui", "tahun": "2022"}, {"soal": "Kemiskinan ditinjau dari jumlah rupiah yg digunakan untuk makan 2100 kalori", "options": [{"letter": "a", "text": "Ekonomi"}, {"letter": "b", "text": "Kesehatan"}, {"letter": "c", "text": "Sosial"}, {"letter": "d", "text": "kebijakan"}], "correct": "a", "pembahasan": "Untuk mengukur kemiskinan, BPS menggunakan konsep kemampuan memenuhi kebutuhan dasar (basic needs approach). Konsep ini mengacu pada Handbook on Poverty and Inequality yang diterbitkan oleh Worldbank. Dengan pendekatan ini, kemiskinan dipandang sebagai ketidakmampuan dari sisi ekonomi untuk memenuhi kebutuhan dasar makanan dan bukan makanan yang diukur dari sisi pengeluaran. Penduduk dikategorikan sebagai penduduk miskin jika memiliki rata-rata pengeluaran per kapita per bulan di bawah garis kemiskinan. Garis Kemiskinan Makanan (GKM) merupakan nilai pengeluaran minimum untuk kebutuhan makanan yang disetarakan dengan 2100 kilokalori per kapita per hari. Nitip ● Kemiskinan relatif: kondisi miskin karena pengaruh kebijakan pembangunan yang belum menjangkau seluruh masyarakat, sehingga menyebabkan ketimpangan pada pendapatan.", "tahun": "2022"}, {"soal": "Kriteria lokasi industri yang benar adalah", "options": [{"letter": "a", "text": "Jauh dari permukiman"}, {"letter": "b", "text": "Di daerah lindung"}, {"letter": "c", "text": "Di rawa2"}, {"letter": "d", "text": "Sempadan sungai"}, {"letter": "e", "text": "Diantara perkantoran"}], "correct": "a", "pembahasan": "Kriteria lokasi industri: - Bukan lahan subur pertanian - Bukan permukiman dan hutan lindung - Kelerengan <5% - Dekat dengan jalan raya maks 1 km - Jauh dari badan air/sungai minimal 150 m", "tahun": "2022"}, {"soal": "Hubungan Koneksi dan Proximity yang benar adalah", "options": [{"letter": "a", "text": "Cul de sac di perumahan kelas atas dan pelayanan kelurahan"}, {"letter": "b", "text": "Blok kecil ukuran 60-90 (ini memungkinkan)"}, {"letter": "c", "text": "Jarak fasilitas >800m Jarak maks itu kayaknya 400m, jadi kalo >800m ga masuk ga sih? Iya bener"}], "correct": "b", "pembahasan": "Option c salah karena neighborhood idealnya dalam radius 200-400m Blocks should have sides greater than 10 hexameters (60 meters) and less than 30 hexameters (180 meters), with the perimeter less than 100 hexameters (600 meters). *1 hexameter itu 6 meter (Rule #1: Block Size - The Urban Form Standardhttps://www.urbanformstandard.com) Connection and Proximity - Emily Talen", "tahun": "2022"}, {"soal": "Kelerengan TPA kurang dari 20% kenapa", "options": [{"letter": "a", "text": "Menghindari pencemaran Air lindi"}, {"letter": "b", "text": "Kemudahan akses truk sampah"}, {"letter": "c", "text": "duit"}, {"letter": "d", "text": "pengerukan sampah"}], "correct": "a", "pembahasan": "Sumber: http://eprints.ums.ac.id/49651/22/naskah_publikasi.pdf", "tahun": "2022"}, {"soal": "Elemen dari bentang lahan yg mempengaruhi pola guna lahan, permukiman, jalan", "options": [{"letter": "a", "text": "Air"}, {"letter": "b", "text": "Biosfer"}, {"letter": "c", "text": "Batu"}, {"letter": "d", "text": "Hidro"}, {"letter": "e", "text": "Bentuk lahan"}], "correct": "e", "pembahasan": "Bentuk lahan = lanskap / land form Bentang lahan = interaksi dari berbagai bentuk lahan Sumber : https://prodi4.stpn.ac.id/wp-content/uploads/2020/2020/M odul/Semester%20I/General%20View/MODUL_PKL%20 Bentang%20Lahan%20-westi.pdf", "tahun": "2022"}, {"soal": "Proses perencana yg tidak demokrasi", "options": [{"letter": "a", "text": "Master Plan dan Comprehensive"}, {"letter": "b", "text": "participatory and strategic"}, {"letter": "c", "text": "Comprehensive dan participatory"}], "correct": "a", "pembahasan": "Yang ada Masterplan karena hanya dari penguasa (teokrasi) Comprehensive=teknokrasi (meskipun ada sedikit peran masyarakat di dalamnya) Strategic=demokrasi", "tahun": "2022"}, {"soal": "Bukan prinsip pengembangan masyarakat", "options": [{"letter": "a", "text": "Collective action"}, {"letter": "b", "text": "Stratifikasi Sosial"}, {"letter": "c", "text": "Keadilan"}, {"letter": "d", "text": "Pemberdayaan"}, {"letter": "e", "text": "Inklusif"}], "correct": "b", "pembahasan": "Social stratification refers to a society's categorization of its people into groups based on socioeconomic factors like wealth, income, race, education, ethnicity, gender, occupation, social status, or derived power. Sumber: PPT Pengmas Minggu 11", "tahun": "2022"}, {"soal": "Bukan kriteria/ciri organisasi pembangunan, kecuali Bukan+kecuali? Berarti iya? - x - = +", "options": [{"letter": "a", "text": "Kelembagaan formal, non formal, informal yang hierarkis"}, {"letter": "b", "text": "Sistem menyerupai bejana keterhubungan"}, {"letter": "c", "text": "Satuan ruang terdiri dari ruang-ruang yang membentuk pola tertentu (ini keknya)"}, {"letter": "d", "text": "Pembagian beban yg jelas"}, {"letter": "e", "text": "bla bla peran"}], "correct": "c", "pembahasan": "Ini materi di mana yaa?? Kenapa kok nanyanya pake 2 tanda tanya? Ada maksud terselubung ya? Vigung katanya mau redfleg aje", "tahun": "2022"}, {"soal": "Manakah yang tidak termasuk dalam ketentuan peraturan zonasi, kecuali →berarti yang termasuk ya guys? Tidak, kecuali? Lieur euy Manakah yang termasuk dalam ketentuan peraturan zonasi, kecuali", "options": [{"letter": "a", "text": "Ketentuan pemanfaatan lahan"}, {"letter": "b", "text": "Ketentuan prasarana dan sarana minimum"}, {"letter": "c", "text": "Ketentuan khusus → bener juga??"}, {"letter": "d", "text": "Ketentuan tata bangunan →Betull adaa,"}, {"letter": "e", "text": "Ketentuan hirarki perumahan/permukiman (kode rumah R1,R2) (?) →bener juga??"}], "correct": "e", "pembahasan": "Ketentuan tata bangunan (contoh)→ https://dpmptsp.pemkomedan.go.id/userfiles/dpmptspme dan/dpmptspwebaplikasi/files/JDIH/11.-LAMPIRAN-XI-TA", "tahun": "2022"}, {"soal": "Metode dalam PWK yang digunakan untuk menghasilkan data dan pengetahuan", "options": [{"letter": "a", "text": "multi criteria analysis"}, {"letter": "b", "text": "multi data and information …"}, {"letter": "c", "text": "multi planning …"}, {"letter": "d", "text": "multi ???"}, {"letter": "e", "text": "multi ???"}], "correct": "a", "pembahasan": "?? bisa si soalnya data dan pengetahuan yg dimaksud g spesifik tp kek g meyakinkan e jawabannya ini wq3. ha3 Data: dari itungan pairwise dll Pengetahuan: yg pilihan terbaik", "tahun": "2022"}, {"soal": "kegunaan keunggulan komparatif (comparative advantage)", "options": [{"letter": "a", "text": "melakukan perdagangan antar wilayah dan terjadi spesialisasi"}, {"letter": "b", "text": "Efisiensi produksi dengan teknologi tinggi (?)"}, {"letter": "c", "text": "Wilayah bisa impor barang dari wilayah lain"}, {"letter": "d", "text": "wilayah dapat menentukan batas administrasi"}, {"letter": "e", "text": "semua benar Mohon penjelasannya untuk opsi d dong… Kenapa kok a? Mohon jelasin dongg"}], "correct": "a", "pembahasan": "David Ricardo memunculkan teori keunggulan komparatif dalam bukunya Principles of Political Economy and Taxation (1817). Dia berpendapat bahwa basis produksi dan perdagangan seharusnya bukan pada keunggulan absolut melainkan pada keunggulan komparatif. Dengan kata lain, biaya peluang adalah pertimbangan untuk keputusan produksi, bukan biaya per unit absolut. Beberapa asumsi penting dalam teori keunggulan komparatif Ricardo adalah: ● Produksi hanya melibatkan dua jenis barang dan dua negara ● Tidak ada biaya transportasi, yang mana dapat mengeliminasi efek dari biaya peluang dan mempengaruhi harga jual ● Pasar beroperasi pada persaingan sempurna di kedua negara ● Faktor produksi hanya terdiri dari tenaga kerja ● Tenaga kerja adalah mobile di pasar domestik tapi immobile antar negara Mau semua benar tapi yang D ganggu ajg", "tahun": "2022"}, {"soal": "Peninjauan Kembali (PK) dapat dilakukan lebih dari 1 kali dalam 5 tahun karena, kecuali", "options": [{"letter": "a", "text": "Bencana alam"}, {"letter": "b", "text": "Kejadian geopolitik"}, {"letter": "c", "text": "Perubahan batas administrasi"}, {"letter": "d", "text": "Pergantian pemimpin/kepala daerah"}], "correct": "d", "pembahasan": "NOMOR 6 TAHUN 2017 TENTANG TATA CARA PENINJAUAN KEMBALI RENCANA TATA RUANG WILAYAH", "tahun": "2022"}, {"soal": "ITBX, kecuali…", "options": [{"letter": "a", "text": "diizinkan"}, {"letter": "b", "text": "tidak diizinkan"}, {"letter": "c", "text": "diizinkan bersyarat tertentu"}, {"letter": "d", "text": "diizinkan bersyarat terbatas"}, {"letter": "e", "text": "diizinkan bersyarat terbuka"}], "correct": "e", "pembahasan": "ITBX adalah komponen peraturan keruangan yang ada di dalam peraturan zonasi Urutan hirarkinya : RTRW →RDTR dan PZ →RTBL Cttn tambahan: Muatan peraturan zonasi meliputi: a) Aturan dasar; dan/atau b)", "tahun": "2023 (UAS)"}, {"soal": "Skala RTRW Kabupaten", "options": [{"letter": "a", "text": "1:2.000"}, {"letter": "b", "text": "1:5.000"}, {"letter": "c", "text": "1:25.000"}, {"letter": "d", "text": "1:50.000"}, {"letter": "e", "text": "1:100.000"}], "correct": "d", "pembahasan": "RTR Provinsi : 1: 250.000 1:2000 →RTBL sumber: https://spada.uns.ac.id/pluginfile.php/641114/mod_resource/content/ 1/Standar%20Peta%20Tata%20Ruang.pdf", "tahun": "2023 (UAS)"}, {"soal": "Penanganan bencana di skala kota yang ngga relate dalam kebencanaan di indo bkn si?", "options": [{"letter": "a", "text": "angin puting beliung"}, {"letter": "b", "text": "kapasitas adaptasi gempa"}, {"letter": "c", "text": "kebakaran hutan"}, {"letter": "d", "text": "banjir"}, {"letter": "e", "text": "wabah penyakit"}], "correct": "c", "pembahasan": "banjir Karhutla itu ada organisasi pengendaliannya di tingkat pemerintah pusat, provinsi, dan kab/kota. berarti jawabannya bukan kebakaran hutan dong krn itu masih ada penanggungjawabnya di skala kota (?) begimane menurut klen T_T", "tahun": "2023 (UAS)"}, {"soal": "Pengertian Duplex sama dengan", "options": [{"letter": "a", "text": "flat"}, {"letter": "b", "text": "row houses"}, {"letter": "c", "text": "maisonette"}, {"letter": "d", "text": "apartemen"}, {"letter": "e", "text": "rusunawa"}], "correct": "c", "pembahasan": "maisonette (ini yg bener) -> Duplex dalam konteks perumahan biasanya merujuk pada tipe rumah yang terdiri dari dua unit hunian yang terpisah, tetapi saling terhubung secara vertikal. Duplex/kopel itu kan 1 lt (single storey houses) tp bangunannya berdempetan, jd menurut kami itu mirip sm row houses krn dia berderet dan 1lt. Kalo maissonete/townhouse itu memang berderet, tapi dia 2 lt (two storey houses).", "tahun": "2023 (UAS)"}, {"soal": "Bahasa lain hukum, kecuali", "options": [{"letter": "a", "text": "ius"}, {"letter": "b", "text": "recht"}, {"letter": "c", "text": "droit"}, {"letter": "d", "text": "justicia"}, {"letter": "e", "text": "law"}], "correct": "d", "pembahasan": "Pengertian pertama dalam bahasa Latin disebut ius, dalam bahasa Perancis droit, dalam bahasa Belanda recht, dalam bahasa Jerman juga disebut Recht, sedangkan dalam bahasa Indonesia disebut Hukum. sumber: https://ditjenpp.kemenkumham.go.id/index.php?option=com_content&vi ew=article&id=259:ilmu-hukum-dalam-perspektif-ilmu-pengetahuan-mod ern&catid=108&Itemid=161 Materi Humper Minggu 1 Justicia: Keadilan!", "tahun": "2023 (UAS)"}, {"soal": "perencanaan komprehensif dan kolaboratif 1. komprehensif basis ide dari perencana, kolaboratif dari stakeholders 2. komprehensif arus informasi unilateral, kolaboratif multilateral 3. komprehensif keputusannya diambil perencana, kolaboratif stakeholders", "options": [{"letter": "a", "text": "1 saja"}, {"letter": "b", "text": "1 dan 2"}, {"letter": "c", "text": "1 dan 3"}, {"letter": "d", "text": "semua salah"}, {"letter": "e", "text": "semua benar"}], "correct": "e", "pembahasan": "", "tahun": "2023 (UAS)"}, {"soal": "rantai nilai untuk wilayah yang logistik, kecuali", "options": [{"letter": "a", "text": "logistic inbound"}, {"letter": "b", "text": "logistic outbound"}, {"letter": "c", "text": "operasional"}, {"letter": "d", "text": "pemasaran dan penjualan"}, {"letter": "e", "text": "nilai rantai(?)"}], "correct": "e", "pembahasan": "", "tahun": "2023 (UAS)"}, {"soal": "KKL 1. Dianalisis secara vertikal dan horizontal 2. horizontal: goals, purpose, outcome, output, 3. vertikal: Indikator, stakeholder, asumsi", "options": [{"letter": "a", "text": "1 saja"}, {"letter": "b", "text": "1 dan 2"}, {"letter": "c", "text": "1 dan 3"}, {"letter": "d", "text": "semua benar"}, {"letter": "e", "text": "semua salah"}], "correct": "a", "pembahasan": "", "tahun": "2023 (UAS)"}, {"soal": "Fungsi APBD untuk menilai dan meninjau", "options": [{"letter": "a", "text": "fungsi pengawasan"}, {"letter": "b", "text": "fungsi distribusi"}, {"letter": "c", "text": "fungsi stabilisasi"}, {"letter": "d", "text": "fungsi alokasi"}], "correct": "a", "pembahasan": "Permendagri no 13 thn 2006 sdh dicabut yhaa, diganti dg permendagri no 77 thn 2020, tp isinya sama kok ^^", "tahun": "2023 (UAS)"}, {"soal": "Daerah konservasi pesisir dan laut tidak diperbolehkan untuk", "options": [{"letter": "a", "text": "permukiman"}, {"letter": "b", "text": "perikanan"}, {"letter": "c", "text": "energi terbarukan"}, {"letter": "d", "text": "pariwisata"}, {"letter": "e", "text": "lindung"}], "correct": "a", "pembahasan": "", "tahun": "2023 (UAS)"}, {"soal": "Derajat kejenuhan (V/C) dikatakan buruk ketika mencapai nilai", "options": [{"letter": "a", "text": "0"}, {"letter": "b", "text": "0,5"}, {"letter": "c", "text": "lebih dari 0,8"}, {"letter": "d", "text": "tidak bisa dihitung"}], "correct": "c", "pembahasan": "", "tahun": "2023 (UAS)"}, {"soal": "Yang dimaksud pengelolaan Sanitary landfill", "options": [{"letter": "a", "text": "ditimbun dalam waktu tertentu(?)"}, {"letter": "b", "text": "ditimbun tiap hari dan ada saluran air lindi"}, {"letter": "c", "text": "ditimbun dan dibakar"}, {"letter": "d", "text": "Ditimbun dengan tanah secara periodik"}], "correct": "b", "pembahasan": "", "tahun": "2023 (UAS)"}, {"soal": "Tes hipotesis digunakan dalam penelitian dengan tujuan", "options": [{"letter": "a", "text": "menarik kesimpulan"}, {"letter": "b", "text": "menguji kebenaran dugaan peneliti"}, {"letter": "c", "text": "menguji reliabilitas dan kesimpulan"}, {"letter": "d", "text": "menguji validitas sampel thd populasi"}], "correct": "a", "pembahasan": "kalau dari ini keknya menarik kesimpulan Loh, tp kalo berdasarkan itu justru D ga sih jwbnnya, karena dia mengambil kesimpulannya dari ‘apakah sampelnya udah representatif thd populasi atau belom’", "tahun": "2023 (UAS)"}, {"soal": "Modal sosial yang mempengaruhi kemiskinan", "options": [{"letter": "a", "text": "tempat rekreasi"}, {"letter": "b", "text": "alat kerja"}, {"letter": "c", "text": "modal sosial"}, {"letter": "d", "text": "kelembagaan (?)"}, {"letter": "e", "text": "organisasi kerja"}], "correct": "e", "pembahasan": "", "tahun": "2023 (UAS)"}, {"soal": "Yang termasuk sifat Data Vektor", "options": [{"letter": "a", "text": "kualitas data rendah"}, {"letter": "b", "text": "dapat dilakukan analisis aritmatik"}, {"letter": "c", "text": "kualitas data tinggi"}, {"letter": "d", "text": "tidak terpengaruh pixel"}, {"letter": "e", "text": "resolusi tinggi"}], "correct": "d", "pembahasan": "", "tahun": "2023 (UAS)"}, {"soal": "Yang bisa diintervensi dalam skala kawasan", "options": [{"letter": "a", "text": "culdesac"}, {"letter": "b", "text": "pola grid yang tidak beraturan"}, {"letter": "c", "text": "lahan parkir yang luas"}, {"letter": "d", "text": "blok terlalu besar"}, {"letter": "e", "text": "?"}], "correct": "d", "pembahasan": "Blok->district ini ap yaaa):", "tahun": "2023 (UAS)"}, {"soal": "Perencanaan yang membagi tanggung jawab secara proporsional", "options": [{"letter": "a", "text": "kolaboratif"}, {"letter": "b", "text": "RCP"}, {"letter": "c", "text": "participatory (pilihannya yg ini gender planning ga sih?)"}, {"letter": "d", "text": "strategic planning"}, {"letter": "e", "text": "empowerment"}], "correct": "a", "pembahasan": "", "tahun": "2023 (UAS)"}, {"soal": "Dampak IKN pada aspek spasial, kecuali", "options": [{"letter": "a", "text": "bertambahnya peran dan tanggung jawab balikpapan dan samarinda"}, {"letter": "b", "text": "punahnya satwa"}, {"letter": "c", "text": "struktur ruang nasional berubah"}, {"letter": "d", "text": "Rusaknya lahan gambut"}, {"letter": "e", "text": "?"}], "correct": "b", "pembahasan": "", "tahun": "2023 (UAS)"}, {"soal": "Yang tidak dipertimbangkan dalam perencanaan jaringan irigasi", "options": [{"letter": "a", "text": "sosiologis"}, {"letter": "b", "text": "demografis"}, {"letter": "c", "text": "klimatologi"}, {"letter": "d", "text": "hidrologi"}, {"letter": "e", "text": "topografi"}], "correct": "a", "pembahasan": "https://simantu.pu.go.id/personal/img-post/autocover/1eaf47480de61 0b3acc859d060d91740.pdf", "tahun": "2023 (UAS)"}, {"soal": "yang mempengaruhi dinamika penduduk, kecuali", "options": [{"letter": "a", "text": "imigrasi"}, {"letter": "b", "text": "migrasi"}, {"letter": "c", "text": "kelahiran"}, {"letter": "d", "text": "kematian"}, {"letter": "e", "text": "struktur penduduk"}], "correct": "e", "pembahasan": "", "tahun": "2023 (UAS)"}, {"soal": "Tokoh yang membangun kota pada masa penjajahan belanda yaitu", "options": [{"letter": "a", "text": "Jan Gehl"}, {"letter": "b", "text": "Andreas"}, {"letter": "c", "text": "Herman Thomas Karsten"}], "correct": "c", "pembahasan": "", "tahun": "2023 (UAS)"}, {"soal": "Pembagian tugas secara proporsional disebut", "options": [{"letter": "a", "text": "perencanaan collaborative"}, {"letter": "b", "text": "komprehensif"}, {"letter": "c", "text": "rasional"}], "correct": "a", "pembahasan": "", "tahun": "2023 (UAS)"}, {"soal": "urutan backcasting method", "options": [{"letter": "a", "text": "pengumpulan data-isu strategis-visi"}, {"letter": "b", "text": "-visi diakhir"}, {"letter": "c", "text": "visi di akhir"}, {"letter": "d", "text": "identifikasi isu strategis-visi-pengumpulan data-potensi maslah (kayanya ini)"}], "correct": "d", "pembahasan": "Identifikasi masalah/isu strategis →penyusunan visi → pengumpulan data →penyusunan tahap/strategi mencapai visi", "tahun": "2023 (UTS)"}, {"soal": "perbedaan berpikir kritis dan berpikir kreatif", "options": [{"letter": "a", "text": "berpikir kritis itu pake logis, kreatif itu intuisi (kayanya ini)"}, {"letter": "b", "text": "berpikir kritis itu konvergen, kreatif itu divergen"}, {"letter": "c", "text": "berpikir kritis itu …"}], "correct": "a", "pembahasan": "berpikir kritis fokus pada problem, berpikir kreatif fokus pada solusi - berpikir kreatif adalah gabungan dari berpikir logis dan divergen yang didasarkan pada intuisi (Pehkonen, 1997) sehingga menghasilkan sesuatu yang baru (Siswono, 2016). Sumber: https://prosiding.upgris.ac.id/index.php/SENATIK2016/senati k/paper/viewFile/1046/995 - berpikir kritis itu analitis = konvergen; logis; refleksif; sistematik", "tahun": "2023 (UTS)"}, {"soal": "yang bukan pengolahan air secara kimia", "options": [{"letter": "a", "text": "adsorbsi"}, {"letter": "b", "text": "presipitasi"}, {"letter": "c", "text": "sedimentasi"}, {"letter": "d", "text": "oksidasi"}], "correct": "c", "pembahasan": "", "tahun": "2023 (UTS)"}, {"soal": "densitas sampah", "options": [{"letter": "a", "text": "volume/luas"}, {"letter": "b", "text": "luas/massa"}, {"letter": "c", "text": "massa/luas area"}, {"letter": "d", "text": "volume/massa"}, {"letter": "e", "text": "massa/volume"}], "correct": "e", "pembahasan": "Sumber: https://id.scribd.com/document/436554554/Rumus-Dan-Perhitungan -Densitas-Sampah", "tahun": "2023 (UTS)"}, {"soal": "Yang tidak termasuk tahap/proses perumusan RTRW", "options": [{"letter": "a", "text": "persiapan"}, {"letter": "b", "text": "penyusunan konsep RTRW"}, {"letter": "c", "text": "pengumpulan data dan informasi"}, {"letter": "d", "text": "analisis data"}, {"letter": "e", "text": "pengesahan perda RTRW"}], "correct": "e", "pembahasan": "", "tahun": "2023 (UTS)"}, {"soal": "kevin lynch, sungai termasuk …", "options": [{"letter": "a", "text": "Landmark"}, {"letter": "b", "text": "path"}, {"letter": "c", "text": "node"}, {"letter": "d", "text": "district"}, {"letter": "e", "text": "edge"}], "correct": "e", "pembahasan": "tapi bisa juga jadi path kalo orang masih menggunakan sungai sebagai jalur transportasi 😛tapi blio (kevin lynch) tetap bilangnya river = edge", "tahun": "2023 (UTS)"}, {"soal": "cara nentuin blank spot fasos fasum kecuali", "options": [{"letter": "a", "text": "isochrone berjalan kaki?"}, {"letter": "b", "text": "isodistance"}, {"letter": "c", "text": "…"}, {"letter": "d", "text": "…"}, {"letter": "e", "text": "skalogram"}], "correct": "e", "pembahasan": "1. Skalogram langkah mengidentifikasi ordo (tingkat) pusat/simpul permukiman berdasarkan kelengkapan fasilitas →jadi hasilnya klasifikasi simpul permukiman/ordo jadi gak tahu apakah ada daerah yang blank spot gak Info-info tambahan: 2. Indeks Sentralis Marshall: penentuan simpul permukiman yang ditentukan melalui kelengkapan fasilitas yang disertai dengan pembobotan (ini yg jadi pembeda dengan skalogram). Semakin tinggi tingkat pelayanan suatu fasilitas maka makin tinggi bobotnya, misal fasilitas SMA dia bobotnya akan lebih besar dari SD 3. Nearest neighborhood: analisis yang dilakukan untuk menentukan simpul permukiman yang kemudian menjadi dasar untuk analisis skalogram", "tahun": "2023 (UTS)"}, {"soal": "Kelebihan menerapkan infastruktur hijau dalam ketahanan pangan, kecuali", "options": [{"letter": "a", "text": "meningkatkan ekonomi lokal"}, {"letter": "b", "text": "penyedia bahan makanan bagi tunawisma"}, {"letter": "c", "text": "harga impor makanan blabla"}, {"letter": "d", "text": "meningkatkan kesehatan"}], "correct": "d", "pembahasan": "karena peningkatan kesehatan bukan dampak langsung dari infrastruktur hijau", "tahun": "2023 (UTS)"}, {"soal": "data yang dibutuhkan untuk proyeksi penduduk metode komposit cohort, kecuali", "options": [{"letter": "a", "text": "data survival rate"}, {"letter": "b", "text": "angka kematian"}, {"letter": "c", "text": "angka kelahiran"}, {"letter": "d", "text": "angka migrasi"}, {"letter": "e", "text": "jumlah penduduk menurut umur 75"}], "correct": "b", "pembahasan": "tabel kematian itu lengkap dengan data spesifik umur kematian → survival rate: rata-rata usia bertahan hidup manusia, BUKAN jumlah orang yang mati pada tahun tertentu (angka kematian)", "tahun": "2023 (UTS)"}, {"soal": "peninjauan kembali (PK) RTRW bisa lebih dari sekali dalam 5thn dengan syarat sbg berikut, kecuali", "options": [{"letter": "a", "text": "apabila ada pergantian kepala negara/daerah"}, {"letter": "b", "text": "apabila ada bencana skala besar"}, {"letter": "c", "text": "apabila ada perubahan batas wilayah"}, {"letter": "d", "text": "apabila ada perubahan geopolitik"}, {"letter": "e", "text": "apabila ada kebijakan strategis"}], "correct": "a", "pembahasan": "Peraturan Menteri Agraria dan Tata Ruang/ Kepala Badan Pertanahan Nasional Republik Indonesia Nomor 6 Tahun 2017 tentang Tata Cara Peninjauan Kembali Rencana Tata Ruang Wilayah", "tahun": "2024"}, {"soal": "Pengolahan air secara kimia, kecuali", "options": [{"letter": "a", "text": "adsorbsi"}, {"letter": "b", "text": "oksidasi"}, {"letter": "c", "text": "sedimentasi"}, {"letter": "d", "text": "desinfeksi"}], "correct": "c", "pembahasan": "", "tahun": "2024"}, {"soal": "ITBX", "options": [{"letter": "a", "text": "diperbolehkan"}, {"letter": "b", "text": "tidak diperbolehkan"}, {"letter": "c", "text": "diperbolehkan bersyarat tertentu"}, {"letter": "d", "text": "diperbolehkan bersyarat terbatas"}, {"letter": "e", "text": "diperbolehkan bersyarat terbuka"}], "correct": "e", "pembahasan": "", "tahun": "2024"}, {"soal": "Pengertian NSDA yang paling sesuai", "options": [{"letter": "a", "text": "menghitung cadangan yang belum dimanfaatkan secara optimal"}, {"letter": "b", "text": "menghitung potensi yang sudah digunakan"}, {"letter": "c", "text": "menghitung sumber daya alam"}], "correct": "a", "pembahasan": "", "tahun": "2024"}, {"soal": "Visualisasi untuk data time series perkembangan penduduk?", "options": [{"letter": "a", "text": "line"}, {"letter": "b", "text": "scatter"}, {"letter": "c", "text": "bar"}, {"letter": "d", "text": "pie"}, {"letter": "e", "text": "radar"}], "correct": "a", "pembahasan": "Soal kompre kating 19", "tahun": "2024"}, {"soal": "Metode yang membawa suatu teori atau konsep yang sudah ada kemudian diuji di lapangan", "options": [{"letter": "a", "text": "Induktif"}, {"letter": "b", "text": "Deduktif"}, {"letter": "c", "text": "Delphi"}, {"letter": "d", "text": "Content Analysis"}, {"letter": "e", "text": "Studi Kasus"}], "correct": "b", "pembahasan": "Soal kompre kating 19", "tahun": "2024"}, {"soal": "kriteria lokasi industri yang benar", "options": [{"letter": "a", "text": "jauh dari permukiman"}, {"letter": "b", "text": "di kawasan lindung"}, {"letter": "c", "text": "di rawa-rawa"}, {"letter": "d", "text": "sempadan sungai"}, {"letter": "e", "text": "diantara perkantoran"}], "correct": "a", "pembahasan": "Soal kompre kating 19", "tahun": "2024"}]</script>
+<script>
+  const RAW = JSON.parse(document.getElementById('questionData').textContent);
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  let order = shuffle(RAW.map((_, i) => i));
+  let idx = 0;
+  let score = 0;
+  let answered = new Array(RAW.length).fill(false);
+  let wasCorrect = new Array(RAW.length).fill(false);
+  let missedIndices = [];
+  let reviewMode = false;
+  let reviewList = [];
+
+  const soalText = document.getElementById('soalText');
+  const optionsList = document.getElementById('optionsList');
+  const feedback = document.getElementById('feedback');
+  const verdict = document.getElementById('verdict');
+  const pembBody = document.getElementById('pembBody');
+  const counter = document.getElementById('counter');
+  const scoreLine = document.getElementById('scoreLine');
+  const progressFill = document.getElementById('progressFill');
+  const nextBtn = document.getElementById('nextBtn');
+  const shuffleBtn = document.getElementById('shuffleBtn');
+  const card = document.getElementById('card');
+  const quizArea = document.getElementById('quizArea');
+  const summaryArea = document.getElementById('summaryArea');
+  const summaryScore = document.getElementById('summaryScore');
+  const summaryNote = document.getElementById('summaryNote');
+
+  const verdictLabels = {
+    correct: ['Tepat sekali.', 'Benar.', 'Betul.', 'Jawaban tepat.'],
+    wrong: ['Belum tepat.', 'Kurang tepat.', 'Masih keliru.', 'Coba lagi lain kali.']
+  };
+
+  function currentList() {
+    return reviewMode ? reviewList : order;
+  }
+
+  function renderQuestion() {
+    const list = currentList();
+    const qIndex = list[idx];
+    const q = RAW[qIndex];
+
+    card.setAttribute('data-tahun', q.tahun);
+    soalText.textContent = q.soal;
+    optionsList.innerHTML = '';
+    feedback.className = 'feedback';
+    nextBtn.classList.remove('active');
+
+    q.options.forEach(opt => {
+      const li = document.createElement('li');
+      li.className = 'option';
+      li.dataset.letter = opt.letter;
+      li.innerHTML = `<span class="letter">${opt.letter.toUpperCase()}</span><span class="opt-text">${opt.text}</span>`;
+      li.addEventListener('click', () => handleAnswer(qIndex, opt.letter, li));
+      optionsList.appendChild(li);
+    });
+
+    counter.textContent = `Soal ${idx + 1} dari ${list.length}` + (reviewMode ? ' (tinjauan)' : '');
+    scoreLine.textContent = reviewMode ? `Meninjau soal yang salah` : `Benar ${score}`;
+    progressFill.style.width = `${(idx / list.length) * 100}%`;
+
+    if (answered[qIndex] && !reviewMode) {
+      revealAnswer(qIndex, null, true);
+    }
+  }
+
+  function handleAnswer(qIndex, letter, liEl) {
+    if (answered[qIndex] && !reviewMode) return;
+    const q = RAW[qIndex];
+    const isCorrect = letter === q.correct;
+
+    if (!answered[qIndex]) {
+      answered[qIndex] = true;
+      wasCorrect[qIndex] = isCorrect;
+      if (isCorrect) {
+        score++;
+      } else {
+        if (!missedIndices.includes(qIndex)) missedIndices.push(qIndex);
+      }
+    }
+    revealAnswer(qIndex, letter, false);
+  }
+
+  function revealAnswer(qIndex, chosenLetter, silent) {
+    const q = RAW[qIndex];
+    const opts = optionsList.querySelectorAll('.option');
+    opts.forEach(li => {
+      li.classList.add('locked');
+      if (li.dataset.letter === q.correct) {
+        li.classList.add('correct');
+      } else if (chosenLetter && li.dataset.letter === chosenLetter) {
+        li.classList.add('wrong');
+      } else {
+        li.classList.add('dim');
+      }
+    });
+
+    const correctNow = wasCorrect[qIndex];
+    feedback.classList.add('show');
+    feedback.classList.add(correctNow ? 'is-correct' : 'is-wrong');
+    const bank = correctNow ? verdictLabels.correct : verdictLabels.wrong;
+    verdict.textContent = bank[qIndex % bank.length];
+
+    if (q.pembahasan && q.pembahasan.trim().length > 0) {
+      pembBody.textContent = q.pembahasan;
+      pembBody.classList.remove('no-pemb');
+    } else {
+      pembBody.textContent = 'Tidak ada catatan pembahasan tertulis untuk soal ini pada sumber aslinya.';
+      pembBody.classList.add('no-pemb');
+    }
+
+    scoreLine.textContent = reviewMode ? `Meninjau soal yang salah` : `Benar ${score}`;
+    if (!silent) {
+      nextBtn.classList.add('active');
+    } else {
+      nextBtn.classList.add('active');
+    }
+  }
+
+  function goNext() {
+    const list = currentList();
+    if (idx < list.length - 1) {
+      idx++;
+      renderQuestion();
+    } else {
+      showSummary();
+    }
+  }
+
+  function showSummary() {
+    quizArea.style.display = 'none';
+    summaryArea.style.display = 'block';
+    const total = reviewMode ? reviewList.length : RAW.length;
+    if (reviewMode) {
+      summaryScore.textContent = `Tinjauan selesai`;
+      summaryNote.textContent = `Kamu sudah meninjau ulang ${reviewList.length} soal yang sebelumnya salah.`;
+    } else {
+      summaryScore.textContent = `${score} / ${total}`;
+      const pct = Math.round((score / total) * 100);
+      summaryNote.textContent = `Skor kamu ${pct}%. ` + (missedIndices.length > 0 ? `Ada ${missedIndices.length} soal yang masih perlu ditinjau ulang.` : 'Semua soal terjawab benar.');
+    }
+    document.getElementById('reviewBtn').style.display = (missedIndices.length > 0 && !reviewMode) ? 'inline-block' : 'none';
+  }
+
+  function restart(newOrder) {
+    order = newOrder || shuffle(RAW.map((_, i) => i));
+    idx = 0;
+    score = 0;
+    answered = new Array(RAW.length).fill(false);
+    wasCorrect = new Array(RAW.length).fill(false);
+    missedIndices = [];
+    reviewMode = false;
+    quizArea.style.display = 'block';
+    summaryArea.style.display = 'none';
+    renderQuestion();
+  }
+
+  nextBtn.addEventListener('click', goNext);
+  shuffleBtn.addEventListener('click', () => restart(shuffle(RAW.map((_, i) => i))));
+  document.getElementById('restartBtn').addEventListener('click', () => restart());
+  document.getElementById('reviewBtn').addEventListener('click', () => {
+    reviewMode = true;
+    reviewList = missedIndices.slice();
+    idx = 0;
+    quizArea.style.display = 'block';
+    summaryArea.style.display = 'none';
+    renderQuestion();
+  });
+
+  renderQuestion();
+</script>
+</body>
+</html>
